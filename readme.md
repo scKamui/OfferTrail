@@ -23,6 +23,7 @@ Main Features:
  Responsive and minimal design for better usability on different screen sizes  
  Light gradient background for a modern look  
 
+
 How to Run:
 -----------
 1. **Set up a local server** (such as XAMPP or MAMP):
