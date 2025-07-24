@@ -41,7 +41,6 @@ How to Run:
 
 5. **Login or Register**:
    - create a new account. Otherwise, login with the test credentials provided.
-   - You can use my login: username: sami password: sami
 
 6. **Start using OfferTrail!**  
    - Add new job applications, track your progress, and stay on top of all your submissions.
