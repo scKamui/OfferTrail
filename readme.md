@@ -21,8 +21,14 @@ Main Features:
    - Yellow/Grey: Pending  
    - Red: Rejected  
  Responsive and minimal design for better usability on different screen sizes  
- Light gradient background for a modern look  
+ Light gradient background for a modern look
 
+Screenshots:
+<img width="1439" height="779" alt="Screenshot 2025-07-23 at 6 59 06 PM" src="https://github.com/user-attachments/assets/18b5ab1e-5b0e-432f-9419-a0562ea5e9ad" />
+
+<img width="1440" height="779" alt="Screenshot 2025-07-23 at 6 59 43 PM" src="https://github.com/user-attachments/assets/8ec8d567-149a-4d92-8a32-b4d15114c1f5" />
+
+<img width="1440" height="779" alt="Screenshot 2025-07-23 at 7 00 36 PM" src="https://github.com/user-attachments/assets/60d9518a-57be-493b-a52b-b3dbba2aa535" />
 
 How to Run:
 -----------
