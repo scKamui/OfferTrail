@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+__MACOSX/
+
+# IDEs / editors
+.vscode/
+.idea/
+
+# PHP / XAMPP
+*.log
+tmp/
+vendor/
+
+# Env / secrets
+.env
+config/database.php
