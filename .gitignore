@@ -1,16 +1,46 @@
-# macOS
+# I keep generated files and private settings out of GitHub.
+
+# Installed packages
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Test results
+/coverage
+
+# Next.js generated files
+/.next/
+/out/
+
+# Production build files
+/build
+
+# Computer and security files I do not want to upload
 .DS_Store
-__MACOSX/
+*.pem
 
-# IDEs / editors
-.vscode/
-.idea/
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
-# PHP / XAMPP
-*.log
-tmp/
-vendor/
+# Private keys and environment settings
+.env*
+!.env.example
 
-# Env / secrets
-.env
-config/database.php
+# Local Vercel settings
+.vercel
+
+# Local AI coding instructions
+AGENTS.md
+CLAUDE.md
+
+# TypeScript generated files
+*.tsbuildinfo
+next-env.d.ts
