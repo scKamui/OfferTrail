@@ -3,8 +3,9 @@
 import { useActionState } from "react";
 import { createApplication, updateApplication } from "@/actions/applications";
 import type { Application } from "@/db/schema";
-import { APPLICATION_STATUSES, STATUS_LABELS, WORK_MODES } from "@/lib/constants";
+import { WORK_MODES } from "@/lib/constants";
 import { EMPTY_ACTION_STATE } from "@/lib/validation";
+import { StatusBadge } from "./status-badge";
 import { SubmitButton } from "./submit-button";
 
 type ApplicationFormProps = {
@@ -23,13 +24,9 @@ export function ApplicationForm({ application }: ApplicationFormProps) {
     : createApplication;
   const [state, formAction] = useActionState(chosenAction, EMPTY_ACTION_STATE);
 
-  // I remove the timezone ending because datetime-local does not accept it.
-  const nextStepValue = application?.nextStepAt
-    ? application.nextStepAt.toISOString().slice(0, 16)
-    : "";
-
   return (
     <form action={formAction} className="application-form">
+      <input name="status" type="hidden" value={application?.status ?? "applied"} />
       {state.message && <div className="form-error">{state.message}</div>}
 
       <div className="form-section">
@@ -73,28 +70,25 @@ export function ApplicationForm({ application }: ApplicationFormProps) {
       <div className="form-section">
         <div>
           <h2 className="form-section-title">Progress</h2>
-          <p className="form-section-copy">Dates and stages help build the trail.</p>
+          <p className="form-section-copy">
+            {application
+              ? "Your current stage changes when you add a progress update below."
+              : "Start the timeline with the date you applied."}
+          </p>
         </div>
         <div className="form-fields">
+          {application && (
+            <div className="field-label">
+              Current status
+              <div><StatusBadge status={application.status} /></div>
+              <span className="field-help">Add a progress update after saving any changes.</span>
+            </div>
+          )}
           <label className="field-label">
-            Current status
-            <select defaultValue={application?.status ?? "applied"} name="status">
-              {APPLICATION_STATUSES.map((status) => <option key={status} value={status}>{STATUS_LABELS[status]}</option>)}
-            </select>
-            <FieldError messages={state.errors?.status} />
+            Date applied
+            <input defaultValue={application?.appliedAt ?? ""} name="appliedAt" type="date" />
+            <FieldError messages={state.errors?.appliedAt} />
           </label>
-          <div className="grid gap-5 sm:grid-cols-2">
-            <label className="field-label">
-              Date applied
-              <input defaultValue={application?.appliedAt ?? ""} name="appliedAt" type="date" />
-              <FieldError messages={state.errors?.appliedAt} />
-            </label>
-            <label className="field-label">
-              Next step
-              <input defaultValue={nextStepValue} name="nextStepAt" type="datetime-local" />
-              <FieldError messages={state.errors?.nextStepAt} />
-            </label>
-          </div>
           <label className="field-label">
             Notes
             <textarea defaultValue={application?.notes ?? ""} name="notes" maxLength={3000} rows={6} placeholder="Contacts, interview notes, salary range, or anything worth remembering..." />

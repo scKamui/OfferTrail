@@ -17,7 +17,7 @@ export const config = {
   matcher: [
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     "/(api|trpc)(.*)",
-    // I leave Clerk's internal path public so its sign-in tools can load properly.
-    "/__clerk/:path*",
+    // I include Clerk's internal path so its authentication requests always reach the middleware.
+    "/__clerk/(.*)",
   ],
 };

@@ -22,6 +22,17 @@ export const applicationStatus = pgEnum("application_status", [
 
 export const workMode = pgEnum("work_mode", ["remote", "hybrid", "onsite"]);
 
+export const progressUpdateType = pgEnum("progress_update_type", [
+  "follow_up",
+  "screening",
+  "interview",
+  "assessment",
+  "offer",
+  "rejected",
+  "withdrawn",
+  "custom",
+]);
+
 // Each row stores one job application for one Clerk user.
 export const applications = pgTable(
   "applications",
@@ -51,6 +62,31 @@ export const applications = pgTable(
   ],
 );
 
+// Each row records one dated change in an application's progress history.
+export const applicationUpdates = pgTable(
+  "application_updates",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    applicationId: uuid("application_id")
+      .notNull()
+      .references(() => applications.id, { onDelete: "cascade" }),
+    clerkUserId: varchar("clerk_user_id", { length: 255 }).notNull(),
+    type: progressUpdateType("type").notNull(),
+    description: varchar("description", { length: 160 }).notNull(),
+    updateDate: date("update_date").notNull(),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    // I index both IDs because updates are normally loaded by application or user.
+    index("application_updates_application_id_idx").on(table.applicationId),
+    index("application_updates_user_id_idx").on(table.clerkUserId),
+  ],
+);
+
 // I get these TypeScript types from the table so the UI stays in sync with the database.
 export type Application = typeof applications.$inferSelect;
+export type ApplicationUpdate = typeof applicationUpdates.$inferSelect;
 export type NewApplication = typeof applications.$inferInsert;

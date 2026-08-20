@@ -8,11 +8,28 @@ import { StatusBadge } from "./status-badge";
 // I format dates here before the finished page is sent to the browser.
 function formatDate(value: string | Date | null) {
   if (!value) return "Not set";
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split("-").map(Number);
+    return new Intl.DateTimeFormat("en-CA", { month: "short", day: "numeric", year: "numeric" })
+      .format(new Date(year, month - 1, day));
+  }
   return new Intl.DateTimeFormat("en-CA", { month: "short", day: "numeric", year: "numeric" })
     .format(new Date(value));
 }
 
-export function ApplicationTable({ applications }: { applications: Application[] }) {
+type LatestUpdate = {
+  applicationId: string;
+  description: string;
+  updateDate: string;
+};
+
+export function ApplicationTable({
+  applications,
+  updates,
+}: {
+  applications: Application[];
+  updates: LatestUpdate[];
+}) {
   if (applications.length === 0) {
     return (
       <div className="empty-state">
@@ -28,6 +45,14 @@ export function ApplicationTable({ applications }: { applications: Application[]
     );
   }
 
+  // The updates arrive newest first, so I keep the first one for each application.
+  const latestUpdates = new Map<string, LatestUpdate>();
+  updates.forEach((update) => {
+    if (!latestUpdates.has(update.applicationId)) {
+      latestUpdates.set(update.applicationId, update);
+    }
+  });
+
   return (
     <div className="table-shell">
       <table className="application-table">
@@ -36,12 +61,15 @@ export function ApplicationTable({ applications }: { applications: Application[]
             <th>Company and role</th>
             <th>Status</th>
             <th>Applied</th>
-            <th>Next step</th>
+            <th>Latest update</th>
             <th><span className="sr-only">Actions</span></th>
           </tr>
         </thead>
         <tbody>
-          {applications.map((application) => (
+          {applications.map((application) => {
+            const latestUpdate = latestUpdates.get(application.id);
+
+            return (
             <tr key={application.id}>
               <td>
                 <div className="flex items-start gap-3">
@@ -59,7 +87,14 @@ export function ApplicationTable({ applications }: { applications: Application[]
               </td>
               <td><StatusBadge status={application.status} /></td>
               <td className="text-sm text-slate-600">{formatDate(application.appliedAt)}</td>
-              <td className="text-sm text-slate-600">{formatDate(application.nextStepAt)}</td>
+              <td className="text-sm text-slate-600">
+                {latestUpdate ? (
+                  <div>
+                    <p className="font-medium text-slate-700">{latestUpdate.description}</p>
+                    <p className="mt-0.5 text-xs text-slate-400">{formatDate(latestUpdate.updateDate)}</p>
+                  </div>
+                ) : "No updates"}
+              </td>
               <td>
                 <div className="flex justify-end gap-1">
                   {application.jobUrl && (
@@ -84,7 +119,7 @@ export function ApplicationTable({ applications }: { applications: Application[]
                 </div>
               </td>
             </tr>
-          ))}
+          );})}
         </tbody>
       </table>
     </div>

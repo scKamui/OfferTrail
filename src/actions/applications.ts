@@ -21,7 +21,6 @@ function readApplicationForm(formData: FormData) {
     status: String(formData.get("status") ?? "applied"),
     workMode: String(formData.get("workMode") ?? "remote"),
     appliedAt: String(formData.get("appliedAt") ?? ""),
-    nextStepAt: String(formData.get("nextStepAt") ?? ""),
     notes: String(formData.get("notes") ?? ""),
   };
 }
@@ -36,7 +35,6 @@ function toDatabaseValues(data: ReturnType<typeof applicationSchema.parse>) {
     status: data.status,
     workMode: data.workMode,
     appliedAt: data.appliedAt || null,
-    nextStepAt: data.nextStepAt ? new Date(data.nextStepAt) : null,
     notes: data.notes || null,
     updatedAt: new Date(),
   };

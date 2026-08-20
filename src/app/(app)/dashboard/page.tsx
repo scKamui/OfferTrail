@@ -5,7 +5,7 @@ import { ApplicationTable } from "@/components/application-table";
 import { CalendarView } from "@/components/calendar-view";
 import { StatCard } from "@/components/stat-card";
 import { APPLICATION_STATUSES, STATUS_LABELS, type ApplicationStatus } from "@/lib/constants";
-import { getApplications } from "@/lib/applications";
+import { getApplications, getProgressUpdates } from "@/lib/applications";
 
 type DashboardPageProps = {
   searchParams: Promise<{ query?: string; status?: string; view?: string }>;
@@ -25,12 +25,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const status = APPLICATION_STATUSES.includes(filters.status as ApplicationStatus)
     ? (filters.status as ApplicationStatus)
     : undefined;
-  const applicationRows = await getApplications(userId, { query: filters.query, status });
+  const [applicationRows, progressUpdates] = await Promise.all([
+    getApplications(userId, { query: filters.query, status }),
+    getProgressUpdates(userId),
+  ]);
   const interviewCount = applicationRows.filter((item) => item.status === "interview").length;
   const offerCount = applicationRows.filter((item) => item.status === "offer").length;
-  const upcomingCount = applicationRows.filter(
-    (item) => item.nextStepAt && new Date(item.nextStepAt) >= new Date(),
-  ).length;
+  const today = new Date().toISOString().slice(0, 10);
+  const upcomingCount = progressUpdates.filter((item) => item.updateDate >= today).length;
   const firstName = user?.firstName ?? "there";
   const calendarMode = filters.view === "calendar";
 
@@ -50,7 +52,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       <section className="mt-8 grid gap-4 sm:grid-cols-3">
         <StatCard label="Total applications" value={applicationRows.length} detail="Across all active stages" icon={BriefcaseBusiness} />
         <StatCard label="Interviews" value={interviewCount} detail="Applications at interview stage" icon={CalendarCheck} />
-        <StatCard label="Offers" value={offerCount} detail={`${upcomingCount} upcoming next steps`} icon={CircleCheckBig} />
+        <StatCard label="Offers" value={offerCount} detail={`${upcomingCount} upcoming updates`} icon={CircleCheckBig} />
       </section>
 
       <section className="mt-8">
@@ -81,12 +83,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             id: item.id,
             company: item.company,
             position: item.position,
-            status: item.status,
             appliedAt: item.appliedAt,
-            nextStepAt: item.nextStepAt?.toISOString() ?? null,
-          }))} />
+          }))} updates={progressUpdates} />
         ) : (
-          <ApplicationTable applications={applicationRows} />
+          <ApplicationTable applications={applicationRows} updates={progressUpdates} />
         )}
       </section>
     </div>

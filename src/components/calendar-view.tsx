@@ -1,33 +1,54 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { ApplicationStatus } from "@/lib/constants";
+import type { ProgressUpdateType } from "@/lib/constants";
 
 // I pass dates to this Client Component as strings so Next.js can send them safely.
 type CalendarItem = {
   id: string;
   company: string;
   position: string;
-  status: ApplicationStatus;
   appliedAt: string | null;
-  nextStepAt: string | null;
 };
 
-type CalendarEvent = CalendarItem & {
+type ProgressCalendarItem = {
+  id: string;
+  applicationId: string;
+  company: string;
+  position: string;
+  description: string;
+  type: ProgressUpdateType;
+  updateDate: string;
+};
+
+type CalendarEvent = {
+  applicationId: string;
+  color: ProgressUpdateType | "applied";
+  company: string;
+  description: string;
   day: number;
-  kind: "applied" | "next-step";
+  eventId: string;
+  kind: "applied" | "progress-update";
   month: number;
+  position: string;
   year: number;
 };
 
 // I send the calendar plain data from the server because the calendar is interactive.
-export function CalendarView({ applications }: { applications: CalendarItem[] }) {
+export function CalendarView({
+  applications,
+  updates,
+}: {
+  applications: CalendarItem[];
+  updates: ProgressCalendarItem[];
+}) {
   const [visibleMonth, setVisibleMonth] = useState(() => new Date());
   const year = visibleMonth.getFullYear();
   const month = visibleMonth.getMonth();
 
-  // I add one event for the applied date and another for the next step when it exists.
+  // I add the applied date and every saved progress update to the calendar.
   const eventsByDate = useMemo(() => {
     const groupedEvents = new Map<string, CalendarEvent[]>();
 
@@ -45,30 +66,39 @@ export function CalendarView({ applications }: { applications: CalendarItem[] })
           .map(Number);
 
         addEvent({
-          ...application,
+          applicationId: application.id,
+          color: "applied",
+          company: application.company,
+          description: "Applied",
           day: appliedDay,
+          eventId: `applied-${application.id}`,
           kind: "applied",
           month: appliedMonth - 1,
+          position: application.position,
           year: appliedYear,
         });
       }
+    });
 
-      if (application.nextStepAt) {
-        const nextStepDate = new Date(application.nextStepAt);
+    updates.forEach((update) => {
+      const [updateYear, updateMonth, updateDay] = update.updateDate.split("-").map(Number);
 
-        addEvent({
-          ...application,
-          day: nextStepDate.getDate(),
-          kind: "next-step",
-          month: nextStepDate.getMonth(),
-          year: nextStepDate.getFullYear(),
-        });
-      }
-
+      addEvent({
+        applicationId: update.applicationId,
+        color: update.type,
+        company: update.company,
+        description: update.description,
+        day: updateDay,
+        eventId: update.id,
+        kind: "progress-update",
+        month: updateMonth - 1,
+        position: update.position,
+        year: updateYear,
+      });
     });
 
     return groupedEvents;
-  }, [applications]);
+  }, [applications, updates]);
 
   const days = useMemo(() => {
     const firstWeekday = new Date(year, month, 1).getDay();
@@ -96,7 +126,9 @@ export function CalendarView({ applications }: { applications: CalendarItem[] })
       <div className="flex items-center justify-between border-b border-slate-200 p-5">
         <div>
           <h2 className="text-lg font-semibold">{title}</h2>
-          <p className="mt-1 text-xs text-slate-500">Applied dates and upcoming next steps</p>
+          <p className="mt-1 text-xs text-slate-500">
+            Applied dates and progress updates. Click any item to edit the application.
+          </p>
         </div>
         <div className="flex gap-1">
           <button className="icon-button" onClick={() => changeMonth(-1)} aria-label="Previous month">
@@ -118,16 +150,19 @@ export function CalendarView({ applications }: { applications: CalendarItem[] })
                 <span className="text-sm font-medium text-slate-500">{day}</span>
                 <div className="mt-2 space-y-1">
                   {itemsForDay(day).map((item) => (
-                    <div
-                      className={`calendar-event calendar-event-${item.status} ${item.kind === "next-step" ? "calendar-event-next-step" : ""}`}
-                      key={`${item.id}-${item.kind}`}
+                    <Link
+                      aria-label={`Edit ${item.position} at ${item.company}`}
+                      className={`calendar-event calendar-event-${item.color} ${item.kind === "progress-update" ? "calendar-event-progress-update" : ""}`}
+                      href={`/applications/${item.applicationId}/edit`}
+                      key={item.eventId}
+                      title="Edit application"
                     >
                       <span className="calendar-event-kind">
-                        {item.kind === "applied" ? "Applied" : "Next step"}
+                        {item.kind === "applied" ? "Application" : "Progress update"}
                       </span>
-                      <strong>{item.company}</strong>
-                      <span>{item.position}</span>
-                    </div>
+                      <strong>{item.description}</strong>
+                      <span>{item.company} · {item.position}</span>
+                    </Link>
                   ))}
                 </div>
               </>
