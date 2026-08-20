@@ -1,0 +1,601 @@
+@import "tailwindcss";
+
+/* I keep the main colors here so I can change the whole theme in one place. */
+:root {
+  --background: #f7f8f3;
+  --foreground: #17211c;
+  --brand: #16734b;
+  --brand-dark: #0f5b3a;
+  --line: #e3e7df;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* I use the same box sizing everywhere to keep spacing predictable. */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--background);
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease,
+    box-shadow 160ms ease, transform 160ms ease;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgb(22 115 75 / 22%);
+  outline-offset: 2px;
+}
+
+/* I share these button styles so buttons stay consistent across the app. */
+.button {
+  display: inline-flex;
+  min-height: 2.65rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.8rem;
+  padding: 0.65rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.button-primary {
+  background: var(--brand);
+  color: white;
+  box-shadow: 0 7px 18px rgb(15 91 58 / 16%);
+}
+
+.button-primary:hover {
+  background: var(--brand-dark);
+  transform: translateY(-1px);
+}
+
+.button-secondary {
+  border: 1px solid var(--line);
+  background: white;
+  color: #33413a;
+}
+
+.button-secondary:hover,
+.button-ghost:hover {
+  background: #eef2ec;
+}
+
+.button-ghost {
+  color: #33413a;
+}
+
+.button-large {
+  min-height: 3.1rem;
+  padding-inline: 1.25rem;
+}
+
+.eyebrow {
+  color: var(--brand);
+  font-size: 0.75rem;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.page-title {
+  margin-top: 0.45rem;
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: 650;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+}
+
+/* I give the landing cards a light shadow so they stand out without looking heavy. */
+.hero-card {
+  position: relative;
+  border: 1px solid rgb(255 255 255 / 70%);
+  border-radius: 1.6rem;
+  background: rgb(255 255 255 / 88%);
+  padding: clamp(1.25rem, 3vw, 2rem);
+  box-shadow: 0 30px 80px rgb(45 64 54 / 14%);
+}
+
+.hero-card::before {
+  position: absolute;
+  z-index: -1;
+  inset: -18%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(88 185 132 / 20%), transparent 65%);
+  content: "";
+}
+
+.sample-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  border: 1px solid #edf0eb;
+  border-radius: 1rem;
+  background: white;
+  padding: 0.9rem;
+}
+
+.company-mark {
+  display: grid;
+  width: 2.55rem;
+  height: 2.55rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 0.75rem;
+  background: #e8f4ed;
+  color: var(--brand);
+  font-weight: 750;
+}
+
+.feature-card {
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+  background: rgb(255 255 255 / 70%);
+  padding: 1.5rem;
+}
+
+/* I place Clerk's sign-in and sign-up boxes inside this simple background. */
+.auth-shell {
+  position: relative;
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 15% 15%, rgb(117 198 150 / 22%), transparent 28%),
+    radial-gradient(circle at 90% 80%, rgb(244 190 92 / 18%), transparent 30%),
+    var(--background);
+  padding: 6rem 1rem 2rem;
+}
+
+.auth-card {
+  border-radius: 1.5rem;
+  box-shadow: 0 24px 70px rgb(39 55 46 / 12%);
+}
+
+/* I keep the sidebar fixed when there is enough screen space. */
+.app-shell {
+  min-height: 100vh;
+  background: #f5f6f2;
+}
+
+.app-sidebar {
+  position: fixed;
+  z-index: 20;
+  inset: 0 auto 0 0;
+  display: none;
+  width: 15.5rem;
+  flex-direction: column;
+  border-right: 1px solid var(--line);
+  background: rgb(255 255 255 / 88%);
+  padding: 1.6rem 1.25rem;
+  backdrop-filter: blur(16px);
+}
+
+.mobile-header {
+  position: sticky;
+  z-index: 20;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  background: rgb(255 255 255 / 88%);
+  padding: 0.75rem 1rem;
+  backdrop-filter: blur(16px);
+}
+
+.app-content {
+  min-width: 0;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.75rem;
+  padding: 0.7rem 0.8rem;
+  color: #667169;
+  font-size: 0.9rem;
+  font-weight: 580;
+}
+
+.nav-link:hover,
+.nav-link-active {
+  background: #eaf3ed;
+  color: var(--brand-dark);
+}
+
+.page-container {
+  width: 100%;
+  max-width: 88rem;
+  margin-inline: auto;
+  padding: 2rem 1rem 4rem;
+}
+
+.page-container-narrow {
+  max-width: 66rem;
+}
+
+.stat-card,
+.calendar-card,
+.form-card,
+.table-shell {
+  border: 1px solid var(--line);
+  border-radius: 1.15rem;
+  background: white;
+  box-shadow: 0 8px 30px rgb(43 61 51 / 4%);
+}
+
+.stat-card {
+  padding: 1.25rem;
+}
+
+.stat-icon,
+.empty-icon {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 0.8rem;
+  background: #e9f4ed;
+  color: var(--brand);
+}
+
+.segmented-control {
+  display: inline-flex;
+  width: fit-content;
+  gap: 0.25rem;
+  border-radius: 0.8rem;
+  background: #e8ebe6;
+  padding: 0.25rem;
+}
+
+.segmented-control a {
+  border-radius: 0.6rem;
+  padding: 0.5rem 0.85rem;
+  color: #667169;
+  font-size: 0.85rem;
+  font-weight: 650;
+}
+
+.segmented-control a.active {
+  background: white;
+  color: #233028;
+  box-shadow: 0 1px 4px rgb(31 45 37 / 10%);
+}
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.search-field {
+  display: flex;
+  min-width: min(100%, 17rem);
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: white;
+  padding-inline: 0.8rem;
+  color: #929b95;
+}
+
+.search-field input {
+  width: 100%;
+  padding-block: 0.65rem;
+  outline: none;
+}
+
+.filter-form select,
+.field-label input,
+.field-label select,
+.field-label textarea {
+  border: 1px solid #dce2dc;
+  border-radius: 0.75rem;
+  background: white;
+  color: #26342c;
+}
+
+.filter-form select {
+  min-height: 2.65rem;
+  padding-inline: 0.8rem 2rem;
+}
+
+.table-shell {
+  overflow-x: auto;
+}
+
+.application-table {
+  width: 100%;
+  min-width: 52rem;
+  border-collapse: collapse;
+}
+
+.application-table th {
+  border-bottom: 1px solid var(--line);
+  padding: 0.85rem 1rem;
+  color: #79827c;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.application-table td {
+  border-bottom: 1px solid #edf0ec;
+  padding: 1rem;
+}
+
+.application-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.application-table tbody tr:hover {
+  background: #fafbf8;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.icon-button {
+  display: inline-grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  place-items: center;
+  border-radius: 0.65rem;
+  color: #6f7972;
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  background: #edf1ed;
+  color: #27362d;
+}
+
+.icon-button-danger:hover {
+  background: #fff0f1;
+  color: #c13d4d;
+}
+
+.empty-state {
+  display: flex;
+  min-height: 22rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #d6ddd6;
+  border-radius: 1.15rem;
+  background: rgb(255 255 255 / 60%);
+  padding: 2rem;
+  text-align: center;
+}
+
+/* I let calendar cells shrink on smaller screens while keeping them readable. */
+.calendar-card {
+  overflow-x: auto;
+}
+
+.calendar-grid {
+  display: grid;
+  min-width: 48rem;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calendar-weekdays {
+  border-bottom: 1px solid var(--line);
+  color: #7a847d;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.calendar-weekdays div {
+  padding: 0.75rem;
+}
+
+.calendar-day {
+  min-height: 8rem;
+  border-right: 1px solid #edf0ec;
+  border-bottom: 1px solid #edf0ec;
+  padding: 0.65rem;
+}
+
+.calendar-day:nth-child(7n) {
+  border-right: 0;
+}
+
+.calendar-day-empty {
+  background: #fafbf9;
+}
+
+.calendar-event {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-left: 3px solid #5c8ae6;
+  border-radius: 0.4rem;
+  background: #edf3ff;
+  padding: 0.35rem 0.45rem;
+  color: #36598f;
+  font-size: 0.68rem;
+}
+
+.calendar-event span {
+  overflow: hidden;
+  opacity: 0.75;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* I use this small label to separate applied dates from follow-up dates. */
+.calendar-event-kind {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.calendar-event-next-step {
+  outline: 1px dashed currentColor;
+  outline-offset: -1px;
+}
+
+.calendar-event-interview { border-color: #d7901f; background: #fff7df; color: #865b16; }
+.calendar-event-offer { border-color: #269360; background: #e9f8ef; color: #176642; }
+.calendar-event-rejected { border-color: #cf5361; background: #fff0f1; color: #963845; }
+
+/* I use two form columns: help text on the left and inputs on the right. */
+.application-form {
+  padding: clamp(1.1rem, 3vw, 2rem);
+}
+
+.form-section {
+  display: grid;
+  gap: 1.5rem;
+  border-bottom: 1px solid var(--line);
+  padding-block: 0.5rem 2rem;
+}
+
+.form-section + .form-section {
+  padding-top: 2rem;
+}
+
+.form-section-title {
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+
+.form-section-copy {
+  margin-top: 0.35rem;
+  color: #737d76;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.form-fields {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.field-label {
+  display: grid;
+  gap: 0.45rem;
+  color: #3d4a42;
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.field-label input,
+.field-label select,
+.field-label textarea {
+  width: 100%;
+  padding: 0.72rem 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 450;
+}
+
+.field-label textarea {
+  resize: vertical;
+}
+
+.field-label input:focus,
+.field-label select:focus,
+.field-label textarea:focus {
+  border-color: #7ab394;
+  box-shadow: 0 0 0 3px rgb(22 115 75 / 10%);
+  outline: none;
+}
+
+.field-error {
+  color: #c13d4d;
+  font-size: 0.76rem;
+  font-weight: 550;
+}
+
+.form-error {
+  margin-bottom: 1.25rem;
+  border: 1px solid #f2c7cd;
+  border-radius: 0.75rem;
+  background: #fff4f5;
+  padding: 0.8rem 1rem;
+  color: #9c3341;
+  font-size: 0.85rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #657168;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.back-link:hover {
+  color: var(--brand);
+}
+
+@media (min-width: 768px) {
+  .page-container {
+    padding: 3rem 2rem 5rem;
+  }
+
+  .form-section {
+    grid-template-columns: 0.7fr 1.3fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-sidebar {
+    display: flex;
+  }
+
+  .mobile-header {
+    display: none;
+  }
+
+  .app-content {
+    margin-left: 15.5rem;
+  }
+}
