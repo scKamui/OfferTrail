@@ -72,7 +72,43 @@ describe("extractJobDetails", () => {
       company: "Harbour Tech",
       position: "UX Researcher",
       location: undefined,
+      workMode: undefined,
+      salaryRange: undefined,
       jobDescription: "Help us understand our customers.",
+    });
+  });
+
+  it("reads a Greenhouse page without confusing title details for the company", () => {
+    const html = `
+      <html>
+        <head>
+          <title>Job Application for Software Developer — iOS (Canada) at TextNow, Inc.</title>
+          <meta property="og:title" content="Software Developer — iOS (Canada)" />
+          <meta property="og:description" content="Waterloo, ON - Hybrid" />
+        </head>
+        <body>
+          <div class="job__title"><h1>Software Developer — iOS (Canada)</h1></div>
+          <div class="job__location">Waterloo, ON - Hybrid</div>
+          <div class="job__description">
+            <div class="posting-requirements">
+              <p>Build and maintain high-performance iOS applications.</p>
+            </div>
+            <div data-qa="salary-range">
+              Canada Intermediate: CAD $113,400 - $162,000 annually
+              Canada Senior: CAD $158,000 – 207,000 annually
+            </div>
+          </div>
+        </body>
+      </html>`;
+
+    expect(extractJobDetails(html)).toEqual({
+      company: "TextNow, Inc.",
+      position: "Software Developer — iOS (Canada)",
+      location: "Waterloo, ON - Hybrid",
+      workMode: "hybrid",
+      salaryRange:
+        "CAD $113,400 - $162,000 annually; CAD $158,000 – 207,000 annually",
+      jobDescription: "Build and maintain high-performance iOS applications.",
     });
   });
 

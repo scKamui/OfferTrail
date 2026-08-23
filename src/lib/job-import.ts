@@ -158,8 +158,9 @@ function splitTitle(value?: string) {
 
   // I only split familiar title patterns so I do not guess at unrelated page titles.
   const patterns = [
+    /^Job Application for (.*?) at (.+)$/i,
     /^(.*?)\s+at\s+(.+?)(?:\s+[|–—-]\s+.*)?$/i,
-    /^(.*?)\s+[|–—-]\s+(.+?)$/,
+    /^(.*?)\s+\|\s+(.+?)$/,
   ];
 
   for (const pattern of patterns) {
@@ -175,13 +176,40 @@ function splitTitle(value?: string) {
   return { position: cleanText(value, 120) };
 }
 
+function readFallbackWorkMode(location?: string, description?: string) {
+  const locationText = location?.toLowerCase() ?? "";
+  const descriptionText = description?.toLowerCase() ?? "";
+
+  // I trust the job's location label before scanning the full description for stray words.
+  if (/\bhybrid\b/.test(locationText)) return "hybrid";
+  if (/\b(remote|work from home)\b/.test(locationText)) return "remote";
+  if (/\bhybrid\b/.test(descriptionText)) return "hybrid";
+  if (/\b(remote|work from home)\b/.test(descriptionText)) return "remote";
+
+  return location ? "onsite" : undefined;
+}
+
+function readFallbackSalary($: cheerio.CheerioAPI) {
+  const salarySection = cleanText($("[data-qa='salary-range']").first().text(), 2_000);
+  if (!salarySection) return undefined;
+
+  // I keep just the useful pay ranges instead of copying the paragraph around them.
+  const ranges = salarySection.match(
+    /(?:CAD|USD|EUR|GBP)\s*\$?[\d,.]+\s*[-–—]\s*\$?[\d,.]+(?:\s*(?:annually|yearly|per\s+(?:year|hour)))?/gi,
+  );
+
+  return cleanText(ranges?.join("; ") || salarySection, 160);
+}
+
 function extractFallbackDetails($: cheerio.CheerioAPI): ImportedJobDetails {
-  const pageTitle = readMeta($, ["og:title", "twitter:title"]) || cleanText($("title").text());
-  const titleParts = splitTitle(pageTitle);
+  const socialTitle = readMeta($, ["og:title", "twitter:title"]);
+  const documentTitle = cleanText($("title").text());
+  const titleParts = splitTitle(documentTitle || socialTitle);
 
   const position =
     cleanText($("h1").first().text(), 120) ||
     cleanText($("[data-automation='job-detail-title']").first().text(), 120) ||
+    socialTitle ||
     titleParts.position;
 
   const company =
@@ -189,13 +217,24 @@ function extractFallbackDetails($: cheerio.CheerioAPI): ImportedJobDetails {
     cleanText($(".posting-categories .sort-by-team").first().text(), 120) ||
     titleParts.company;
 
+  const location =
+    cleanText($(".job__location").first().text(), 120) ||
+    cleanText($("[data-automation='job-detail-location']").first().text(), 120) ||
+    cleanText($(".posting-categories .sort-by-location").first().text(), 120);
+
+  const jobDescription =
+    cleanText($(".job__description .posting-requirements").first().text(), MAX_DESCRIPTION_LENGTH) ||
+    cleanText($("[data-qa='job-description']").first().text(), MAX_DESCRIPTION_LENGTH) ||
+    cleanText($(".job__description").first().text(), MAX_DESCRIPTION_LENGTH) ||
+    readMeta($, ["description", "og:description"]);
+
   return {
     company,
     position,
-    location:
-      cleanText($("[data-automation='job-detail-location']").first().text(), 120) ||
-      cleanText($(".posting-categories .sort-by-location").first().text(), 120),
-    jobDescription: readMeta($, ["description", "og:description"]),
+    location,
+    workMode: readFallbackWorkMode(location, jobDescription),
+    salaryRange: readFallbackSalary($),
+    jobDescription,
   };
 }
 
