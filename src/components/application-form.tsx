@@ -1,10 +1,12 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { createApplication, updateApplication } from "@/actions/applications";
 import type { Application } from "@/db/schema";
 import { WORK_MODES } from "@/lib/constants";
+import type { ImportedJobDetails } from "@/lib/job-import";
 import { EMPTY_ACTION_STATE } from "@/lib/validation";
+import { JobImportPanel } from "./job-import-panel";
 import { StatusBadge } from "./status-badge";
 import { SubmitButton } from "./submit-button";
 
@@ -23,11 +25,45 @@ export function ApplicationForm({ application }: ApplicationFormProps) {
     ? updateApplication.bind(null, application.id)
     : createApplication;
   const [state, formAction] = useActionState(chosenAction, EMPTY_ACTION_STATE);
+  const [fields, setFields] = useState({
+    company: application?.company ?? "",
+    position: application?.position ?? "",
+    location: application?.location ?? "",
+    workMode: application?.workMode ?? "remote",
+    jobUrl: application?.jobUrl ?? "",
+    salaryRange: application?.salaryRange ?? "",
+    jobDescription: application?.jobDescription ?? "",
+    applicationDeadline: application?.applicationDeadline ?? "",
+    appliedAt: application?.appliedAt ?? "",
+    notes: application?.notes ?? "",
+  });
+
+  function updateField(name: keyof typeof fields, value: string) {
+    setFields((current) => ({ ...current, [name]: value }));
+  }
+
+  function applyImportedDetails(details: ImportedJobDetails) {
+    // I keep the pasted link and replace only fields that the importer actually found.
+    setFields((current) => ({
+      ...current,
+      ...Object.fromEntries(
+        Object.entries(details).filter(([, value]) => value !== undefined && value !== ""),
+      ),
+    }));
+  }
 
   return (
     <form action={formAction} className="application-form">
       <input name="status" type="hidden" value={application?.status ?? "applied"} />
       {state.message && <div className="form-error">{state.message}</div>}
+
+      {!application && (
+        <JobImportPanel
+          jobUrl={fields.jobUrl}
+          onImport={applyImportedDetails}
+          onJobUrlChange={(value) => updateField("jobUrl", value)}
+        />
+      )}
 
       <div className="form-section">
         <div>
@@ -37,32 +73,107 @@ export function ApplicationForm({ application }: ApplicationFormProps) {
         <div className="form-fields">
           <label className="field-label">
             Company name
-            <input defaultValue={application?.company} name="company" maxLength={120} required />
+            <input
+              maxLength={120}
+              name="company"
+              onChange={(event) => updateField("company", event.target.value)}
+              required
+              value={fields.company}
+            />
             <FieldError messages={state.errors?.company} />
           </label>
           <label className="field-label">
             Position
-            <input defaultValue={application?.position} name="position" maxLength={120} required />
+            <input
+              maxLength={120}
+              name="position"
+              onChange={(event) => updateField("position", event.target.value)}
+              required
+              value={fields.position}
+            />
             <FieldError messages={state.errors?.position} />
           </label>
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="field-label">
               Location
-              <input defaultValue={application?.location ?? ""} name="location" maxLength={120} placeholder="Vancouver, BC" />
+              <input
+                maxLength={120}
+                name="location"
+                onChange={(event) => updateField("location", event.target.value)}
+                placeholder="Vancouver, BC"
+                value={fields.location}
+              />
               <FieldError messages={state.errors?.location} />
             </label>
             <label className="field-label">
               Work setup
-              <select defaultValue={application?.workMode ?? "remote"} name="workMode">
-                {WORK_MODES.map((mode) => <option key={mode} value={mode}>{mode.charAt(0).toUpperCase() + mode.slice(1)}</option>)}
+              <select
+                name="workMode"
+                onChange={(event) => updateField("workMode", event.target.value)}
+                value={fields.workMode}
+              >
+                {WORK_MODES.map((mode) => (
+                  <option key={mode} value={mode}>
+                    {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                  </option>
+                ))}
               </select>
               <FieldError messages={state.errors?.workMode} />
             </label>
           </div>
+          {application ? (
+            <label className="field-label">
+              Job posting link
+              <input
+                name="jobUrl"
+                onChange={(event) => updateField("jobUrl", event.target.value)}
+                placeholder="https://company.com/jobs/..."
+                type="url"
+                value={fields.jobUrl}
+              />
+              <FieldError messages={state.errors?.jobUrl} />
+            </label>
+          ) : (
+            // I submit the link from the import panel even though its visible input sits above the form sections.
+            <input name="jobUrl" type="hidden" value={fields.jobUrl} />
+          )}
+          <div className="grid gap-5 sm:grid-cols-2">
+            <label className="field-label">
+              Salary range
+              <input
+                maxLength={160}
+                name="salaryRange"
+                onChange={(event) => updateField("salaryRange", event.target.value)}
+                placeholder="CAD 80,000–100,000 per year"
+                value={fields.salaryRange}
+              />
+              <FieldError messages={state.errors?.salaryRange} />
+            </label>
+            <label className="field-label">
+              Application deadline
+              <input
+                name="applicationDeadline"
+                onChange={(event) => updateField("applicationDeadline", event.target.value)}
+                type="date"
+                value={fields.applicationDeadline}
+              />
+              <FieldError messages={state.errors?.applicationDeadline} />
+            </label>
+          </div>
           <label className="field-label">
-            Job posting link
-            <input defaultValue={application?.jobUrl ?? ""} name="jobUrl" placeholder="https://company.com/jobs/..." type="url" />
-            <FieldError messages={state.errors?.jobUrl} />
+            Job description
+            <textarea
+              maxLength={12000}
+              name="jobDescription"
+              onChange={(event) => updateField("jobDescription", event.target.value)}
+              placeholder="The imported job description will appear here."
+              rows={8}
+              value={fields.jobDescription}
+            />
+            <span className="field-help">
+              OfferTrail saves this copy in case the original posting is removed later.
+            </span>
+            <FieldError messages={state.errors?.jobDescription} />
           </label>
         </div>
       </div>
@@ -86,12 +197,24 @@ export function ApplicationForm({ application }: ApplicationFormProps) {
           )}
           <label className="field-label">
             Date applied
-            <input defaultValue={application?.appliedAt ?? ""} name="appliedAt" type="date" />
+            <input
+              name="appliedAt"
+              onChange={(event) => updateField("appliedAt", event.target.value)}
+              type="date"
+              value={fields.appliedAt}
+            />
             <FieldError messages={state.errors?.appliedAt} />
           </label>
           <label className="field-label">
             Notes
-            <textarea defaultValue={application?.notes ?? ""} name="notes" maxLength={3000} rows={6} placeholder="Contacts, interview notes, salary range, or anything worth remembering..." />
+            <textarea
+              maxLength={3000}
+              name="notes"
+              onChange={(event) => updateField("notes", event.target.value)}
+              placeholder="Contacts, interview notes, or anything worth remembering..."
+              rows={6}
+              value={fields.notes}
+            />
             <FieldError messages={state.errors?.notes} />
           </label>
         </div>

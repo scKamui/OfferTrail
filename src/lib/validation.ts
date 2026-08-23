@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { APPLICATION_STATUSES, PROGRESS_UPDATE_TYPES, WORK_MODES } from "./constants";
 
+const optionalDateSchema = z
+  .string()
+  .refine((value) => !value || /^\d{4}-\d{2}-\d{2}$/.test(value), "Use a valid date.");
+
 // I check the form again on the server because browser checks can be bypassed.
 export const applicationSchema = z.object({
   company: z.string().trim().min(1, "Company is required.").max(120),
@@ -14,9 +18,16 @@ export const applicationSchema = z.object({
       "Use a full http:// or https:// link.",
     )
     .optional(),
+  salaryRange: z.string().trim().max(160, "Salary must be under 160 characters.").optional(),
+  jobDescription: z
+    .string()
+    .trim()
+    .max(12000, "Job description must be under 12,000 characters.")
+    .optional(),
+  applicationDeadline: optionalDateSchema,
   status: z.enum(APPLICATION_STATUSES),
   workMode: z.enum(WORK_MODES),
-  appliedAt: z.string().optional(),
+  appliedAt: optionalDateSchema,
   notes: z.string().trim().max(3000, "Notes must be under 3,000 characters.").optional(),
 });
 

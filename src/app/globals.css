@@ -501,6 +501,83 @@ textarea:focus-visible {
   padding: clamp(1.1rem, 3vw, 2rem);
 }
 
+/* I highlight the link importer because it is the quickest way to start the form. */
+.job-import-panel {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border: 1px solid #b9dfc8;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #f1faf4, #fbfdf9);
+  padding: clamp(1rem, 3vw, 1.4rem);
+}
+
+.job-import-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+}
+
+.job-import-heading h2 {
+  color: #23372c;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.job-import-heading p {
+  margin-top: 0.25rem;
+  color: #66746b;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.job-import-icon {
+  display: grid;
+  width: 2.3rem;
+  height: 2.3rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 0.7rem;
+  background: #dff2e6;
+  color: var(--brand);
+}
+
+.job-import-controls {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.job-import-input {
+  display: flex;
+  min-height: 2.65rem;
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid #cbd9cf;
+  border-radius: 0.8rem;
+  background: white;
+  padding-inline: 0.8rem;
+  color: #78867c;
+}
+
+.job-import-input:focus-within {
+  border-color: #7ab394;
+  box-shadow: 0 0 0 3px rgb(22 115 75 / 10%);
+}
+
+.job-import-input input {
+  min-width: 0;
+  flex: 1;
+  padding-block: 0.7rem;
+  color: #26342c;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.job-import-panel .form-error,
+.job-import-panel .form-success {
+  margin: 0;
+}
+
 .form-section {
   display: grid;
   gap: 1.5rem;
@@ -676,6 +753,10 @@ textarea:focus-visible {
 
   .form-section {
     grid-template-columns: 0.7fr 1.3fr;
+  }
+
+  .job-import-controls {
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 }
 
